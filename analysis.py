@@ -41,3 +41,10 @@ class Structure:
 	def build_intlinprog(self):
 		'''@return C, A_ub, b_ub, A_lb, b_lb, A_eq, b_eq, i'''
 		pass;
+
+	def solve(self):
+		C, A_ub, b_ub, A_lb, b_lb, A_eq, b_eq, i = self.build_intlinprog();
+		result = intlinprog(C, A_ub, b_ub, A_lb, b_lb, A_eq, b_eq, i);
+		return result;
+
+
