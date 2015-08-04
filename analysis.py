@@ -1,3 +1,5 @@
+from lpsolver import intlinprog
+
 
 class Structure:
 	'''A hanging mobile structure which is a set of points and their masses'''
@@ -18,7 +20,7 @@ class Structure:
 
 	def inequality_constraints_ub(self):
 		'''@return A_ub, b_ub'''
-		pass;
+		pass;																	#
 
 	def inequality_constraints_lb(self):
 		'''@return A_lb, b_lb'''
@@ -34,4 +36,8 @@ class Structure:
 
 	def objective_function(self):
 		'''@return C'''
+		pass;
+
+	def build_intlinprog(self):
+		'''@return C, A_ub, b_ub, A_lb, b_lb, A_eq, b_eq, i'''
 		pass;
