@@ -56,16 +56,16 @@ from cplex.exceptions import CplexError
 #my_sense = "LLE"
 
 # constants
-g = 1.0
-m1 = 9999999.9
-m2 = 8888888.9
-verysmall = 1e-7
+m1 = 9999
+m2 = 8888
+verysmall = 0.0
 
 # inputs
 my_balls_n = 4
 my_balls_x = [0.0, 0.0, 0.0, 0.0]
 my_balls_y = [0.0, 1.0, 0.0, 1.0]
-my_balls_z = [1.0, 1.0, 0.0, 0.0]
+my_balls_z = [1.0, 1,0, 0.0, 0.0]
+my_balls_g = [1.0, 1.0, 1.0, 1.0]
 
 # Vector x:
 # 0 to (n*n-1): x(i->j);                                            n*n entries
@@ -106,10 +106,10 @@ my_lb=[0.0 for x in range(2*my_balls_n*my_balls_n+12*my_balls_n)]
 for i in range(0,my_balls_n):
     for j in range(0,my_balls_n):
         if i!=j:
-            my_ub[i*my_balls_n+j] = 1
+            my_ub[i*my_balls_n+j] = 1.1
         else:
-            my_ub[i*my_balls_n+j] = 0
-        my_lb[i*my_balls_n+j] = 0
+            my_ub[i*my_balls_n+j] = 0.1
+        my_lb[i*my_balls_n+j] = -0.1
         my_ctype = my_ctype + "I"
 
 m = my_balls_n*my_balls_n -1
@@ -121,8 +121,8 @@ for i in range(0, my_balls_n*my_balls_n):
 
 for i in range(0, my_balls_n*6):
     m = m+1
-    my_ub[m] = 1
-    my_lb[m] = 0
+    my_ub[m] = 1.1
+    my_lb[m] = -0.1
     my_ctype = my_ctype + "I"
 
 for i in range(0, my_balls_n*6):
@@ -149,7 +149,7 @@ for i in range(3*my_balls_n*my_balls_n+14*my_balls_n):
 for i in range(0,my_balls_n):
     my_rhs[i*3] = 0.0
     my_rhs[i*3+1] = 0.0
-    my_rhs[i*3+2] = g
+    my_rhs[i*3+2] = my_balls_g[i]
     my_sense = my_sense + "EEE"
 
 m = my_balls_n*3-1
@@ -157,8 +157,8 @@ for i in range(0,my_balls_n*my_balls_n+6*my_balls_n):
     m = m+1
     my_rhs[m] =verysmall-m1
     m = m+1
-    my_rhs[m] = 0.0
-    my_sense = my_sense + "GG"
+    my_rhs[m] = verysmall
+    my_sense = my_sense + "GL"
 
 for i in range(my_balls_n*(my_balls_n-1)):
     m = m+1
@@ -190,11 +190,7 @@ for i in range(my_balls_n*(my_balls_n-1)):
 def populatebyrow(prob):
     prob.objective.set_sense(prob.objective.sense.maximize)
 
-    print(my_obj)
-    print(my_ub)
-    print(my_lb)
-    print(my_ctype)
-    print(my_colnames)
+    
     prob.variables.add(obj=my_obj, lb=my_lb, ub=my_ub, types=my_ctype,
                        names=my_colnames)
     
@@ -220,11 +216,11 @@ def populatebyrow(prob):
                 rows[i*3+2][0]+=[my_colnames[my_balls_n*my_balls_n + j*my_balls_n+i]]
                 rows[i*3+2][1]+=[-(my_balls_z[j]-my_balls_z[i])/my_obj[j*my_balls_n+i]]
         # add +x, -x
-        rows[i*3][0]+=[my_colnames[2*my_balls_n*my_balls_n+i*6],my_colnames[2*my_balls_n*my_balls_n+i*6+1]]
+        rows[i*3][0]+=[my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6],my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6+1]]
         rows[i*3][1]+=[1.0, -1.0]
-        rows[i*3+1][0]+=[my_colnames[2*my_balls_n*my_balls_n+i*6+2],my_colnames[2*my_balls_n*my_balls_n+i*6+3]]
+        rows[i*3+1][0]+=[my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6+2],my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6+3]]
         rows[i*3+1][1]+=[1.0, -1.0]
-        rows[i*3+2][0]+=[my_colnames[2*my_balls_n*my_balls_n+i*6+4],my_colnames[2*my_balls_n*my_balls_n+i*6+5]]
+        rows[i*3+2][0]+=[my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6+4],my_colnames[2*my_balls_n*my_balls_n+6*my_balls_n+i*6+5]]
         rows[i*3+2][1]+=[1.0, -1.0]
 
     # if - else
@@ -232,11 +228,11 @@ def populatebyrow(prob):
     for i in range(0,my_balls_n):
         for j in range(0,my_balls_n):
             m+=1
-            rows[m][0]=[my_colnames[my_balls_n*my_balls_n + j*my_balls_n+i], my_colnames[j*my_balls_n+i]]
+            rows[m][0]=[my_colnames[my_balls_n*my_balls_n + i*my_balls_n+j], my_colnames[i*my_balls_n+j]]
             rows[m][1]=[1.0,-m1]
             m+=1
-            rows[m][0]=[my_colnames[my_balls_n*my_balls_n + j*my_balls_n+i], my_colnames[j*my_balls_n+i]]
-            rows[m][1]=[-1.0,m2]
+            rows[m][0]=[my_colnames[my_balls_n*my_balls_n + i*my_balls_n+j], my_colnames[i*my_balls_n+j]]
+            rows[m][1]=[1.0,-m2]
 
     for i in range(2*my_balls_n*my_balls_n, 2*my_balls_n*my_balls_n+6*my_balls_n):
         m+=1
@@ -244,7 +240,7 @@ def populatebyrow(prob):
         rows[m][1]=[1.0,-m1]
         m+=1
         rows[m][0]=[my_colnames[i+6*my_balls_n], my_colnames[i]]
-        rows[m][1]=[-1.0,m2]
+        rows[m][1]=[1.0,-m2]
 
     # f(a,b)=f(b,a)
     for i in range(0,my_balls_n-1):
@@ -306,7 +302,14 @@ def populatebyrow(prob):
     #       [["f6","x6"],[1.0,-m1]],
     #       [["f6","x6"],[-1.0,m2]]]
 
-    print(rows)
+    for i in range(2*my_balls_n*my_balls_n+12*my_balls_n):
+        print("Column ",i,my_lb[i],"<=",my_colnames[i],"<=",my_ub[i],"weight =",my_obj[i],"type =",my_ctype[i])
+    print()
+
+    for i in range(3*my_balls_n*my_balls_n+14*my_balls_n):
+        print(i,rows[i],my_sense[i],my_rhs[i])
+    print()
+
     prob.linear_constraints.add(lin_expr=rows, senses=my_sense,
                                 rhs=my_rhs, names=my_rownames)
 
@@ -376,7 +379,9 @@ def mipex1(pop_method):
     for j in range(numrows):
         print("Row %d:  Slack = %10f" % (j, slack[j]))
     for j in range(numcols):
-        print("Column %d:  Value = %10f" % (j, x[j]))
+        print("Column %d %s:  Value = %10f" % (j, my_colnames[j],x[j]))
+    print(x[5],"* 1 -",x[1],"* M2",my_sense[9],my_rhs[9])
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] not in ["-r", "-c", "-n"]:
